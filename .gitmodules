@@ -1,0 +1,3 @@
+[submodule "include/haptic-glove/simblee"]
+	path = include/haptic-glove/simblee
+	url = https://github.com/OpenHAK/Simblee.git
