@@ -70,8 +70,8 @@ void onShutdown(int sig)
 }
 
 int main(int argc, char **argv){
-	vm = new VibrationManager(&vibration_callback);
 	ros::init(argc, argv, "vibrator_controller");
+	vm = new VibrationManager(&vibration_callback);
   	ros::Rate loop_rate(30);   
     signal(SIGINT, onShutdown);
   	int count = 0;
