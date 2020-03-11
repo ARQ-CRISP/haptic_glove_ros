@@ -35,7 +35,7 @@ VibrationManager::VibrationManager(void callback(const haptic_glove_ros::Vibrati
 // sub = new ros::Subscriber(listening_topic_name, callback);
 pub = nh.advertise<std_msgs::Int32>(publishing_topic_name, 100);
 sub = nh.subscribe(listening_topic_name, 100, callback);
-reset();
+// reset();
 };
 
 void VibrationManager::send_state(const short unsigned int* state)
