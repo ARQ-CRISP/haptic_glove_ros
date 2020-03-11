@@ -1,6 +1,6 @@
-#include <SimbleeCOM.h>
 #include <ros.h>
 #include <std_msgs/Float64.h>
+#include <SimbleeCOM.h>
 
 ros::NodeHandle  nh;
 //first part is integral, second part is fractional
@@ -42,6 +42,7 @@ void setup()
   for(i=0;i<6;i++){
     pinMode(vibePins[i],OUTPUT);
     }
+  
   nh.initNode();
   nh.subscribe(sub);
 }
@@ -53,6 +54,6 @@ void loop()
 }
 
 void newVibeLevel(){
-    analogWrite(vibePins[0],vibeLevel[currentpos]);
+    analogWrite(vibePins[3],vibeLevel[currentpos]);
     analogWrite(vibePins[1],vibeLevel[currentpos]);
 }

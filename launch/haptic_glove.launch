@@ -1,0 +1,13 @@
+<launch>
+
+<arg name="dev_path"   default="/dev/ttyUSB0" />
+<arg name="baud_rate"   default="57600" />
+
+
+<node pkg="rosserial_python" type="serial_node.py" name="glove_driver" output="screen">
+    <param name="port" value="$(arg dev_path)"/>
+    <param name="baud" value="$(arg baud_rate)"/>
+</node>
+
+
+</launch>
