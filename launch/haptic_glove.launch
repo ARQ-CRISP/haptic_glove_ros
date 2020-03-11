@@ -3,11 +3,15 @@
 <arg name="dev_path"   default="/dev/ttyUSB0" />
 <arg name="baud_rate"   default="57600" />
 
-
+<group>
 <node pkg="rosserial_python" type="serial_node.py" name="glove_driver" output="screen">
     <param name="port" value="$(arg dev_path)"/>
     <param name="baud" value="$(arg baud_rate)"/>
 </node>
-
+<node pkg="haptic_glove_ros" type="vibration_controller" name="glove_controller">
+    <param name="port" value="$(arg dev_path)"/>
+    <param name="baud" value="$(arg baud_rate)"/>
+</node>
+</group>
 
 </launch>

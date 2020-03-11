@@ -1,5 +1,6 @@
 
 #include "ros/ros.h"
+#include <signal.h>
 #include "std_msgs/UInt16.h"
 #include "std_msgs/Int8.h"
 #include "std_msgs/Int32.h"
@@ -14,6 +15,7 @@ public:
     // GloveDriver(void callback(const std_msgs::Int32&));
 VibrationManager(void callback(const haptic_glove_ros::Vibration&));
 void send_state(const short unsigned int*);
+void reset();
 private:
 const static char* listening_topic_name;
 const static char* publishing_topic_name;
@@ -33,7 +35,7 @@ VibrationManager::VibrationManager(void callback(const haptic_glove_ros::Vibrati
 // sub = new ros::Subscriber(listening_topic_name, callback);
 pub = nh.advertise<std_msgs::Int32>(publishing_topic_name, 100);
 sub = nh.subscribe(listening_topic_name, 100, callback);
-// nh.subscribe(sub);
+reset();
 };
 
 void VibrationManager::send_state(const short unsigned int* state)
@@ -45,41 +47,45 @@ void VibrationManager::send_state(const short unsigned int* state)
         pub.publish(new_msg);
         }
 
-}
+};
 
-
+void VibrationManager::reset()
+{
+    unsigned short base_state[] = {0, 0, 0, 0, 0, 0};
+    send_state(base_state);
+};
 
 VibrationManager *vm;
 
 void vibration_callback(const haptic_glove_ros::Vibration& msg)
 {
-    ROS_INFO("%s", "Callback_called");
+    // ROS_INFO("%s", "Callback_called");
     vm->send_state(msg.levels_per_pin.data());
 }
 
-
+void onShutdown(int sig)
+{
+    vm->reset();
+    ros::shutdown();
+}
 
 int main(int argc, char **argv){
-	ros::init(argc, argv, "vibrator_controller");
 	vm = new VibrationManager(&vibration_callback);
-    haptic_glove_ros::Vibration *v;
-  	ros::Rate loop_rate(10);   
-
+	ros::init(argc, argv, "vibrator_controller");
+  	ros::Rate loop_rate(30);   
+    signal(SIGINT, onShutdown);
   	int count = 0;
   	// std_msgs::Float32 msg;
 
   	while (ros::ok())
   	{
-  		// messageVariable = fingerVariable + forceVariable;
-    	// msg.data = messageVariable;	
-  			
-    	// chatter_pub.publish(msg);
 
     	ros::spinOnce();
 
     	loop_rate.sleep();
     	++count;
   }
+  vm->reset();
 
 
   ros::spin();
