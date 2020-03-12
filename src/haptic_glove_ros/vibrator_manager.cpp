@@ -6,25 +6,9 @@
 #include "std_msgs/Int32.h"
 // #include <haptic_glove_ros>
 #include "haptic_glove_ros/Vibration.h"
+#include "vibrator_manager/vibrator_manager.h"
 #include <sstream>
 
-
-class VibrationManager
-{
-public:
-    // GloveDriver(void callback(const std_msgs::Int32&));
-VibrationManager(void callback(const haptic_glove_ros::Vibration&));
-void send_state(const short unsigned int*);
-void reset();
-private:
-const static char* listening_topic_name;
-const static char* publishing_topic_name;
-ros::NodeHandle nh;
-// ros::Subscriber *sub;
-ros::Subscriber sub;
-ros::Publisher pub;
-// ros::Publisher chatter_pub = n.advertise<std_msgs::String>("chatter", 1000);
-};
 
 const char* VibrationManager::listening_topic_name = "vibration_state";
 const char* VibrationManager::publishing_topic_name = "vibration_command";
@@ -55,40 +39,3 @@ void VibrationManager::reset()
     send_state(base_state);
 };
 
-VibrationManager *vm;
-
-void vibration_callback(const haptic_glove_ros::Vibration& msg)
-{
-    // ROS_INFO("%s", "Callback_called");
-    vm->send_state(msg.levels_per_pin.data());
-}
-
-void onShutdown(int sig)
-{
-    vm->reset();
-    ros::shutdown();
-}
-
-int main(int argc, char **argv){
-	ros::init(argc, argv, "vibrator_controller");
-	vm = new VibrationManager(&vibration_callback);
-  	ros::Rate loop_rate(30);   
-    signal(SIGINT, onShutdown);
-  	int count = 0;
-  	// std_msgs::Float32 msg;
-
-  	while (ros::ok())
-  	{
-
-    	ros::spinOnce();
-
-    	loop_rate.sleep();
-    	++count;
-  }
-  vm->reset();
-
-
-  ros::spin();
-
-	return 0;
-}
