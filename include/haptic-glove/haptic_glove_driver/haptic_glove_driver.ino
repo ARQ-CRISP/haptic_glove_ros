@@ -1,5 +1,7 @@
 #include <ros.h>
 #include <std_msgs/Int32.h>
+#define NUM_PINS 6
+#define NUM_LEVELS 5
 //#include <SimbleeCOM.h>
 
 class GloveDriver{
@@ -8,28 +10,35 @@ class GloveDriver{
     GloveDriver(void callback(const std_msgs::Int32&));
     const static int vibePins[];
     const static int vibeLevel[];
-    void make_vib(unsigned int, unsigned int );
+    const static char pin_names[][10];
+    void make_vib();
     void invert_blink();
     void spin();
+    void reset();
     int get_npins(){return num_pins;}
     int get_nlevels(){return num_vlevels;}
+    void set_pin(int pin, int value);
   private:
     const char* topic_name = "vibration_command";
     const int baud_rate = 57600;
-    int num_pins = 0;
-    int num_vlevels = 0;
+    const static int num_pins;
+    const static int num_vlevels;
     bool blinker = false;
+    int pin_state[NUM_PINS];
     ros::NodeHandle nh;
     ros::Subscriber<std_msgs::Int32> *sub;
     
   };
+  
 const int GloveDriver::vibePins[] = {5, 15, 12, 11, 6, 9};
 const int GloveDriver::vibeLevel[] = {0, 140, 170, 200, 230};
+const char GloveDriver::pin_names[][10] = {"Thumb", "Index", "Middle", "Ring", "Pinky", "Palm"};
+const int GloveDriver::num_pins = sizeof(vibePins) / sizeof(*vibePins);
+const int GloveDriver::num_vlevels = sizeof(vibeLevel) / sizeof(*vibeLevel);
+//int GloveDriver::pin_state[num_pins] = {0, 0, 0, 0, 0, 0};
 
 GloveDriver::GloveDriver(void callback(const std_msgs::Int32&)){
    Serial.begin(baud_rate);
-   num_pins = sizeof(vibePins) / sizeof(*vibePins);
-   num_vlevels = sizeof(vibeLevel) / sizeof(*vibeLevel);
    Serial.print("number of pins: ");
    Serial.println(num_pins);
    Serial.print("number of vibration levels: ");
@@ -39,7 +48,7 @@ GloveDriver::GloveDriver(void callback(const std_msgs::Int32&)){
    for(int i=0; i<num_pins; i++){
       pinMode(vibePins[i], OUTPUT);
     }
-  
+  reset();
   nh.initNode(); //haptic_glove_listener
   sub = new ros::Subscriber<std_msgs::Int32>(topic_name, callback);
   nh.subscribe(*sub);
@@ -56,31 +65,60 @@ void GloveDriver::invert_blink()
       }
   };
   
-void GloveDriver::make_vib(unsigned int vib_idx, unsigned int pin_idx){
-  String temp;
-  if(vib_idx < 0 or vib_idx > num_vlevels)
+void GloveDriver::make_vib(){
+  if(pin_state != NULL){
+        String res_string("Active Pins: {");
+        String temp = NULL; // String("")
+        for (int i=0; i<num_pins; i++)
+        {
+          analogWrite(vibePins[i], vibeLevel[pin_state[i]]);  
+          if (pin_state[i] > 0)
+          {
+            temp = String(pin_names[i]) + ": " + String(pin_state[i]) + ", ";
+            res_string += temp;
+            }
+            
+          }
+        res_string += "}";
+        if (temp != NULL)
+        {
+          nh.loginfo(res_string.c_str());
+          }
+  }
+
+  };
+
+void GloveDriver::reset()
+{
+  for (int i=0; i<num_pins; i++)
   {
-    temp = "The value provided for the vibration level is not valid  -> " + String(vib_idx);
+    pin_state[i] = 0;
+    }
+  }
+  
+void GloveDriver::set_pin(int pin_idx, int level_idx){
+  String temp("");
+  if(level_idx < 0 or level_idx > num_vlevels)
+  {
+    temp = "The value provided for the vibration level is not valid  -> " + String(level_idx);
     nh.logerror(temp.c_str());
     return;
     } 
 
   if(pin_idx < 0 or pin_idx > num_pins)
   {
-    temp = "The value provided for the pin idx is not valid   -> " + String(vib_idx);
+    temp = "The value provided for the pin idx is not valid   -> " + String(pin_idx);
     nh.logerror(temp.c_str());
     return;
     } 
-  analogWrite(vibePins[pin_idx], vibeLevel[vib_idx]);
-  nh.loginfo("Vibration succeded!");
-  
-  temp = (String("Vibrating pin: ") + String(pin_idx));
-  nh.loginfo(temp.c_str());
-  temp = (String("Vibrating intensity: ") + String(vib_idx));
-  nh.loginfo(temp.c_str());
-  };
+  pin_state[pin_idx] = level_idx;
+};
+
 
 void GloveDriver::spin(){
+  make_vib();
+  delay(10);
+//  reset();
   nh.spinOnce();
 };
 
@@ -92,17 +130,17 @@ GloveDriver *gd;
 
 void callback(const std_msgs::Int32& msg){
   gd->invert_blink();
-  Serial.println(msg.data);
-//  Serial.print("\n");
+//  Serial.println(msg.data);
   int value = msg.data;
   int vlevel_idx = value % gd->get_nlevels(); 
   int pin_idx = value / gd->get_nlevels();
 
-  Serial.print("vlevel : ");
-  Serial.println(vlevel_idx);
-  Serial.print("pin_idx : ");
-  Serial.println(pin_idx);
-  gd->make_vib(vlevel_idx, pin_idx);
+//  Serial.print("vlevel : ");
+//  Serial.println(vlevel_idx);
+//  Serial.print("pin_idx : ");
+//  Serial.println(pin_idx);
+  gd->set_pin(pin_idx, vlevel_idx);
+//  gd->make_vib(vlevel_idx, pin_idx);
   gd->invert_blink();
   };
 
@@ -117,8 +155,9 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   
-  delay(100);
-  gd->spin();
 //  gd->invert_blink();
+//  delay(10);
+  gd->spin();
+  
 
 }
