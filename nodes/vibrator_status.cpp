@@ -1,12 +1,5 @@
-#include "ros/ros.h"
 #include <signal.h>
-#include "std_msgs/UInt16.h"
-#include "std_msgs/Int8.h"
-#include "std_msgs/Int32.h"
-// #include <haptic_glove_ros>
-#include "haptic_glove_ros/Vibration.h"
 #include "vibrator_manager/vibrator_manager.h"
-#include <sstream>
 
 VibrationManager *vm;
 
@@ -27,21 +20,12 @@ int main(int argc, char **argv){
 	vm = new VibrationManager(&vibration_callback);
   	ros::Rate loop_rate(30);   
     signal(SIGINT, onShutdown);
-  	int count = 0;
-  	// std_msgs::Float32 msg;
-
   	while (ros::ok())
   	{
-
     	ros::spinOnce();
-
     	loop_rate.sleep();
-    	++count;
-  }
-  vm->reset();
-
-
-  ros::spin();
-
+    }
+    vm->reset();
+    ros::spin();
 	return 0;
 }
