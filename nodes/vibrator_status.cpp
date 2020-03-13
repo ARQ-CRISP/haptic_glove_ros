@@ -5,7 +5,6 @@ VibrationManager *vm;
 
 void vibration_callback(const haptic_glove_ros::Vibration& msg)
 {
-    // ROS_INFO("%s", "Callback_called");
     vm->send_state(msg.levels_per_pin.data());
 }
 
