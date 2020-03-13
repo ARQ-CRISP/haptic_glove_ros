@@ -10,13 +10,15 @@ class VibrationManager
 {
     public:
         VibrationManager(void callback(const haptic_glove_ros::Vibration&));
-        void send_state(const short unsigned int*);
+        void update_state(const short unsigned int*);
+        void send_state();
         void reset();
 
     private:
         const static char* listening_topic_name;
         const static char* publishing_topic_name;
 
+        int vibration_state[6] = {0, 0, 0, 0, 0, 0};
         ros::NodeHandle nh;
         ros::Subscriber sub;
         ros::Publisher pub;

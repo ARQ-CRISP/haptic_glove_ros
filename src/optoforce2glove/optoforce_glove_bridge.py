@@ -31,9 +31,9 @@ class Optoforce_Vibrator_Bridge():
         self.__vibropin_state = [0] * 6
         self.magnitude_filter = ([0.0] * 6, [0] * 6)
         for i in range(self.opto_len):
-            lambda_callback = lambda msg: self.callback(i, msg)
+            # lambda_callback = lambda msg: self.callback(i, msg)
             topic = optoforce_topic_base + "{:d}".format(i)
-            self.optosub.append(rospy.Subscriber(topic, WrenchStamped, lambda_callback))
+            self.optosub.append(rospy.Subscriber(topic, WrenchStamped, self.callback, callback_args=i, queue_size=1))
             rospy.loginfo(rospy.get_name().split('/')[1] + ": Subscribing to {:s} -> Allegro {:s}".format(topic, self.opto_finger_order[i]))
         rospy.loginfo("Initialization of optoforce to haptic device complete!")
 
@@ -43,11 +43,11 @@ class Optoforce_Vibrator_Bridge():
         magn = np.linalg.norm(tactile_force, ord=2)
         self.magnitude_filter[1][pin] += 1
         n = self.magnitude_filter[1][pin]
-        self.magnitude_filter[0][pin] = (self.magnitude_filter[0][pin] + (n - 1) * magn)/n
-        rospy.loginfo(self.magnitude_filter[0][pin])
+        self.magnitude_filter[0][pin] = (self.magnitude_filter[0][pin] + (n - 1) * magn) / n
 
         # y = int(np.floor(logistic(magn, 15, 0.3, 4.5))) # min perceived value 10. -  max perceived value 20.
         y = int(np.floor(logistic(self.magnitude_filter[0][pin], 20, 0.1, 4.5))) # between 10- and 50-
+        rospy.loginfo(self.opto_finger_order[pin] + " - magnitude {:.3f} -> level {:d}".format(self.magnitude_filter[0][pin], y))
         
         return y
 
@@ -56,11 +56,12 @@ class Optoforce_Vibrator_Bridge():
         vib.levels_per_pin = self.__vibropin_state
         self.glovepub.publish(vib)
 
-    def callback(self, opto_idx, msg):
+    def callback(self, msg, args):
+        opto_idx = args
         new_val = self.__wrench2level(self.opto_2_glove_pin[opto_idx], msg)
-        self.__vibropin_state[self.opto_2_glove_pin[opto_idx]] = new_val
-        # if new_val is not self.__vibropin_state[self.opto_2_glove_pin[opto_idx]]:
-            # self.__publish_state()
+        if new_val is not self.__vibropin_state[self.opto_2_glove_pin[opto_idx]]:
+            self.__vibropin_state[self.opto_2_glove_pin[opto_idx]] = new_val
+            self.publish_state()
         # print(msg)
 
     def on_shutdown(self):
