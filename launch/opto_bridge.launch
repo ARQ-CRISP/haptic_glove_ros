@@ -1,0 +1,11 @@
+<launch>
+<group>
+        <node pkg="haptic_glove_ros" type="optoforce2hapticglove.py" name="opto2glove_connect" output="screen"/>
+        
+        <include file="$(find optoforce_publisher)/launch/optoforce_publisher.launch">
+                <!-- <arg name="frame_names" value="[link_3_tip, link_7_tip, link_11_tip, link_15_tip]"/> -->
+                <!-- <arg name="invert" value="false"/> -->
+                <!-- <arg name="zero" value="true" /> -->
+        </include>
+    </group>
+</launch>

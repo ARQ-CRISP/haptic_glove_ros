@@ -1,0 +1,13 @@
+<launch>
+
+    <arg name="dev_path"   default="/dev/ttyUSB0" />
+    <arg name="baud_rate"   default="250000" />
+
+    <include file="$(find haptic_glove_ros)/launch/haptic_glove.launch">
+            <arg name="dev_path" value="$(arg dev_path)"/>
+            <arg name="baud_rate" value="$(arg baud_rate)"/>
+    </include>
+
+    <include file="$(find haptic_glove_ros)/launch/opto_bridge.launch"/>
+
+</launch>
