@@ -2,7 +2,8 @@
 #include <std_msgs/Int32.h>
 #define NUM_PINS 6
 #define NUM_LEVELS 5
-//#include <SimbleeCOM.h>
+#define BAUD_RATE 250000 
+//57600
 
 class GloveDriver{
   
@@ -18,9 +19,11 @@ class GloveDriver{
     int get_npins(){return num_pins;}
     int get_nlevels(){return num_vlevels;}
     void set_pin(int pin, int value);
+    int get_pin(int pin);
+    
   private:
     const char* topic_name = "vibration_command";
-    const int baud_rate = 57600;
+    const int baud_rate = BAUD_RATE;
     const static int num_pins;
     const static int num_vlevels;
     bool blinker = false;
@@ -71,12 +74,15 @@ void GloveDriver::make_vib(){
         String temp = NULL; // String("")
         for (int i=0; i<num_pins; i++)
         {
-          analogWrite(vibePins[i], vibeLevel[pin_state[i]]);  
+          //analogWrite(vibePins[i], vibeLevel[pin_state[i]]);  
+          
           if (pin_state[i] > 0)
           {
+            digitalWrite(vibePins[i], HIGH);  
             temp = String(pin_names[i]) + ": " + String(pin_state[i]) + ", ";
             res_string += temp;
             }
+            else digitalWrite(vibePins[i], LOW); 
             
           }
         res_string += "}";
@@ -114,11 +120,13 @@ void GloveDriver::set_pin(int pin_idx, int level_idx){
   pin_state[pin_idx] = level_idx;
 };
 
+int GloveDriver::get_pin(int pin_idx){
+  return pin_state[pin_idx];
+};
+
+
 
 void GloveDriver::spin(){
-  make_vib();
-  delay(10);
-//  reset();
   nh.spinOnce();
 };
 
@@ -134,14 +142,13 @@ void callback(const std_msgs::Int32& msg){
   int value = msg.data;
   int vlevel_idx = value % gd->get_nlevels(); 
   int pin_idx = value / gd->get_nlevels();
-
-//  Serial.print("vlevel : ");
-//  Serial.println(vlevel_idx);
-//  Serial.print("pin_idx : ");
-//  Serial.println(pin_idx);
-  gd->set_pin(pin_idx, vlevel_idx);
-//  gd->make_vib(vlevel_idx, pin_idx);
-  gd->invert_blink();
+  if(gd->get_pin(pin_idx) != vlevel_idx)
+    {
+      gd->set_pin(pin_idx, vlevel_idx);
+      gd->make_vib();
+    }
+    
+    gd->invert_blink();
   };
 
 
@@ -150,7 +157,7 @@ void setup() {
   
   gd = new GloveDriver(&callback);
   Serial.println("Initialization Complete");
-}
+};
 
 void loop() {
   // put your main code here, to run repeatedly:
