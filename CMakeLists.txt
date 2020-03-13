@@ -21,7 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-# catkin_python_setup()
+catkin_python_setup()
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -51,7 +51,6 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
   FILES
   Vibration.msg
-  # Message2.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -123,7 +122,7 @@ include_directories(
   )
 ## Declare a C++ library
 add_library(${PROJECT_NAME}
-  src/${PROJECT_NAME}/vibrator_manager.cpp
+  src/vibrator_manager.cpp
 )
 
 ## Add cmake target dependencies of the library
@@ -135,8 +134,11 @@ add_library(${PROJECT_NAME}
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(raw_data_handler src/rawdatahandler.cpp)
-add_executable(vibration_controller nodes/vibrator_status.cpp src/${PROJECT_NAME}/vibrator_manager.cpp)
-
+add_executable(vibration_controller nodes/vibrator_status.cpp src/vibrator_manager.cpp)
+target_link_libraries(vibration_controller
+  ${catkin_LIBRARIES}
+)
+add_dependencies(vibration_controller haptic_glove_ros)
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -146,12 +148,12 @@ add_executable(vibration_controller nodes/vibrator_status.cpp src/${PROJECT_NAME
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
+add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 ## Specify libraries to link a library or executable target against
 # target_link_libraries(raw_data_handler
 #   ${catkin_LIBRARIES}
 # )
-target_link_libraries(vibration_controller
+target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
 )
 
