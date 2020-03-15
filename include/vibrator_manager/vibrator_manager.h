@@ -1,7 +1,9 @@
 #ifndef VIBRATION_MANAGER_H
 #define VIBRATION_MANAGER_H
 
+#include <string>
 #include "ros/ros.h"
+#include <ros/console.h>
 #include "std_msgs/Int32.h"
 #include "haptic_glove_ros/Vibration.h"
 

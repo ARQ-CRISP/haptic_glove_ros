@@ -1,5 +1,6 @@
 #include "vibrator_manager/vibrator_manager.h"
 
+using namespace std;
 
 const char* VibrationManager::listening_topic_name = "vibration_state";
 const char* VibrationManager::publishing_topic_name = "vibration_command";
@@ -12,13 +13,18 @@ VibrationManager::VibrationManager(void callback(const haptic_glove_ros::Vibrati
 
 void VibrationManager::send_state()
 {
+    string out("");
     for (int i=0; i<haptic_glove_ros::Vibration::n_pins; i++)
     {
         int value = vibration_state[i] + i * haptic_glove_ros::Vibration::n_levels;
         std_msgs::Int32 new_msg; 
         new_msg.data = value;
+         
+        out += to_string(value % haptic_glove_ros::Vibration::n_levels) + ", ";
         pub.publish(new_msg);
     }
+    out = "Vibration Sent: {" + out + "}";
+    ROS_INFO("%s", out.c_str());
 
 };
 

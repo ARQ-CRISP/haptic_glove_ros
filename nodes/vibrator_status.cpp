@@ -6,6 +6,7 @@ VibrationManager *vm;
 void vibration_callback(const haptic_glove_ros::Vibration& msg)
 {
     vm->update_state(msg.levels_per_pin.data());
+	vm->send_state();
 }
 
 void onShutdown(int sig)
@@ -22,7 +23,6 @@ int main(int argc, char **argv){
   	while (ros::ok())
   	{
 		
-    	vm->send_state();
 		loop_rate.sleep();
     	ros::spinOnce();
     }

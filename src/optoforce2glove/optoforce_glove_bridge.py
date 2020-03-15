@@ -12,7 +12,7 @@ from haptic_glove_ros.msg import Vibration
 import numpy as np
 
 def logistic(x ,x0, k, L):
-    det = 1 + np.exp(-k * (x - x0))
+    det = 1 + np.exp( -k * (x - x0))
     return L / det
 
 
@@ -47,7 +47,7 @@ class Optoforce_Vibrator_Bridge():
 
         # y = int(np.floor(logistic(magn, 15, 0.3, 4.5))) # min perceived value 10. -  max perceived value 20.
         y = int(np.floor(logistic(self.magnitude_filter[0][pin], 20, 0.1, 4.5))) # between 10- and 50-
-        rospy.loginfo(self.opto_finger_order[pin] + " - magnitude {:.3f} -> level {:d}".format(self.magnitude_filter[0][pin], y))
+        rospy.logdebug(self.opto_finger_order[pin] + " - magnitude {:.3f} -> level {:d}".format(self.magnitude_filter[0][pin], y))
         
         return y
 
@@ -72,6 +72,7 @@ class Optoforce_Vibrator_Bridge():
         self.reset_vibration()
         self.glovepub.unregister()
         rospy.loginfo("optoforce->haptic_glove connection closed!")
+        rospy.signal_shutdown("End of Node")
 
     def reset_vibration(self):
         self.__vibropin_state = [0] * 6
