@@ -19,3 +19,7 @@ To use this repo:
 - In case of issues with the strings some of the libraries may need to be edited (related to the macro F)
 
 - run the launch file `roslaunch haptic_glove_ros haptic_glove.launch dev_path:=/dev/ttyUSB0` specifing the USB port of the glove.
+
+
+Another way is to run the serial node autonomously `rosrun rosserial_python serial_node.py /dev/ttyUSB0 _baud:=250000`. In many cases it gets problems if it is launched from launch file.
+`roslaunch haptic_glove_ros haptic_glove.launch dev_path:=/dev/ttyUSB0 baud_rate:=250000` launches the application nodes that control the vibration using the optoforce topics.

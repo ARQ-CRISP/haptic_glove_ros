@@ -8,6 +8,6 @@
             <arg name="baud_rate" value="$(arg baud_rate)"/>
     </include>
 
-    <include file="$(find haptic_glove_ros)/launch/opto_bridge.launch"/>
+    <!-- <include file="$(find haptic_glove_ros)/launch/opto_bridge.launch"/> -->
 
 </launch>

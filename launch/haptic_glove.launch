@@ -3,15 +3,14 @@
 <arg name="dev_path"   default="/dev/ttyUSB0" />
 <arg name="baud_rate"   default="250000" />
 
+<!-- <include file="$(find optoforce_publisher)/launch/optoforce_publisher.launch"/> -->
+<!-- <node name="optoforce_publisher_node" type="optoforce_publisher_node" pkg="optoforce_publisher" output="screen"/> -->
 <group>
-    <node pkg="rosserial_python" type="serial_node.py" name="glove_driver" output="screen">
-        <param name="port" value="$(arg dev_path)"/>
-        <param name="baud" value="$(arg baud_rate)"/>
-    </node>
-    <node pkg="haptic_glove_ros" type="vibration_controller" name="glove_controller">
-        <param name="port" value="$(arg dev_path)"/>
-        <param name="baud" value="$(arg baud_rate)"/>
-    </node>
+    <!-- <node pkg="rosserial_python" type="serial_node.py" name="glove_driver" output="log"> -->
+        <!-- <param name="port" value="$(arg dev_path)"/> -->
+        <!-- <param name="baud" value="$(arg baud_rate)"/> -->
+    <!-- </node> -->
+    <node pkg="haptic_glove_ros" type="vibration_controller" name="glove_controller" output="screen"/>
+    <node pkg="haptic_glove_ros" type="optoforce2hapticglove.py" name="opto2glove_connect" output="screen"/>
 </group>
-
 </launch>
