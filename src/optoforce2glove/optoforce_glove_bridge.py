@@ -53,6 +53,7 @@ class Optoforce_Vibrator_Bridge():
 
     def publish_state(self):
         vib = Vibration()
+        vib.header.stamp = rospy.Time.now()
         vib.levels_per_pin = self.__vibropin_state
         self.glovepub.publish(vib)
 
@@ -67,7 +68,8 @@ class Optoforce_Vibrator_Bridge():
     def on_shutdown(self):
         rospy.loginfo("Shutting down the optoforce->haptic_glove connection...")
         for sub in self.optosub:
-            sub.unregister()
+            if sub is not None:
+                sub.unregister()
         rospy.sleep(.5)
         self.reset_vibration()
         self.glovepub.unregister()

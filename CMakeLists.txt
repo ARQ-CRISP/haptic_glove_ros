@@ -139,6 +139,7 @@ target_link_libraries(vibration_controller
   ${catkin_LIBRARIES}
 )
 add_dependencies(vibration_controller haptic_glove_ros)
+add_dependencies(vibration_controller ${catkin_EXPORTED_TARGETS})
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
