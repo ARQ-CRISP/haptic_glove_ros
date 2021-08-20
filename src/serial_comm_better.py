@@ -34,14 +34,18 @@ class ArduinoComm(serial.threaded.LineReader):
         # print('line received: {}\n'.format(line))
         actuators = set(deepcopy(self.VIB_ORDER))
         if line.startswith('[INFO] '):
-            states = line.split('{')[1].split('}')[0].split(',')[:-1]
-            for state in states:
-                finger, lev = state.split(': ')
-                finger = str(finger).strip()
-                actuators = actuators.difference([finger])
-                self.state[finger] = int(lev)
-            for finger in actuators:
-                self.state[finger] = 0
+            try:
+                states = line.split('{')[1].split('}')[0].split(',')[:-1]
+                for state in states:
+                    finger, lev = state.split(': ')
+                    finger = str(finger).strip()
+                    actuators = actuators.difference([finger])
+                    self.state[finger] = int(lev)
+                for finger in actuators:
+                    self.state[finger] = 0
+            except:
+                traceback.print_exc(exc)
+                pass
             # print(self.state)
             # print('current state: {}\n'.format(' '.join(state)))
     
@@ -89,7 +93,7 @@ class GloveConnection():
 # opts = [str(idx) + ' -> ' + finger for idx,finger in enumerate(GloveConnection.VIB_ORDER)]
 class Glove_Node():
     
-    opto_finger_order = ['Ring', 'Middle', 'Index', 'Thumb']
+    opto_finger_order = ['Index', 'Middle', 'Ring', 'Thumb']
     opto_2_glove_pin = [Vibration.pin_ring, Vibration.pin_middle, Vibration.pin_index, Vibration.pin_thumb]
     opto_len = 4
     __opto_min = 10
@@ -97,9 +101,9 @@ class Glove_Node():
     
     def __init__(self):
         
+        self.glove_connection = GloveConnection(BAUD_RATE)
         rospy.init_node('glove_connection')
         rospy.loginfo('Connecting to the haptic glove...')
-        self.glove_connection = GloveConnection(BAUD_RATE)
         self.magnitude_filter = ([0.0] * 6, [0] * 6)
         self.optoforce_subscriber = {finger: \
             rospy.Subscriber('optoforce_wrench_{:d}'.format(idx), WrenchStamped, self.callback, idx) \
@@ -136,8 +140,8 @@ class Glove_Node():
             
     def run(self):
         with self.glove_connection.thread as self.glove_connection.protocol:
-            while not rospy.is_shutdown():
-                
+            while self.glove_connection.connection.isOpen():
+                self.send_state()
                 print(self.glove_connection.vib_state)
                 time.sleep(1e-1)
         
@@ -176,7 +180,10 @@ def node_main():
     
     node = Glove_Node()
     
-    node.run()
+    while not rospy.is_shutdown():
+        node.run()
+        node.glove_connection = GloveConnection(BAUD_RATE)
+        time.sleep(1)
             
 
 if __name__ == '__main__':
