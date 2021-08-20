@@ -42,6 +42,7 @@ const int GloveDriver::num_vlevels = sizeof(vibeLevel) / sizeof(*vibeLevel);
 
 GloveDriver::GloveDriver(void callback(const std_msgs::Int32&)){
    Serial.begin(baud_rate);
+   nh.getHardware().setBaud(baud_rate)
    Serial.print("number of pins: ");
    Serial.println(num_pins);
    Serial.print("number of vibration levels: ");
@@ -162,8 +163,8 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   
-//  gd->invert_blink();
-//  delay(10);
+  gd->invert_blink();
+  delay(10);
   gd->spin();
   
 
