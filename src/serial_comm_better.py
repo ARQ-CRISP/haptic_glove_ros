@@ -102,7 +102,7 @@ class Glove_Node():
         self.glove_connection = GloveConnection(BAUD_RATE)
         self.magnitude_filter = ([0.0] * 6, [0] * 6)
         self.optoforce_subscriber = {finger: \
-            rospy.Subscriber('optoforce_wrench_{:d}'.format(idx), WrenchStamped, self.callback) \
+            rospy.Subscriber('optoforce_wrench_{:d}'.format(idx), WrenchStamped, self.callback, idx) \
                 for idx, finger in enumerate(self.opto_finger_order)}
         
         
@@ -122,17 +122,23 @@ class Glove_Node():
     
     def callback(self, msg, args):
         opto_idx = args
-        new_val = self.__wrench2level(self.opto_2_glove_pin[opto_idx], msg)
-        if new_val is not self.__vibropin_state[self.opto_2_glove_pin[opto_idx]]:
-            self.__vibropin_state[self.opto_2_glove_pin[opto_idx]] = new_val
-            self.publish_state()
+        opto_finger = self.opto_finger_order[opto_idx]
+        vib_idx = self.glove_connection.VIB_ORDER.index(opto_finger)
+        new_val = self.__wrench2level(vib_idx, msg)
+        if new_val is not self.glove_connection.vib_state[vib_idx]:
+            self.glove_connection.vib_state[vib_idx] = new_val
+            # self.publish_state()
+            
+    def send_state(self):
+        for idx, lev in enumerate(self.glove_connection.vib_state):
+            self.glove_connection.set_vib(idx, lev)
+            time.sleep(5e-2)
             
     def run(self):
         with self.glove_connection.thread as self.glove_connection.protocol:
             while not rospy.is_shutdown():
-                for idx, lev in enumerate(self.glove_connection.vib_state):
-                    self.glove_connection.set_vib(idx, lev)
-                    time.sleep(5e-2)
+                
+                print(self.glove_connection.vib_state)
                 time.sleep(1e-1)
         
         
