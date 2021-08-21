@@ -94,7 +94,7 @@ void GloveDriver::make_vib(){
          }
        res_string += "}";
 
-         Serial.print("[INFO] ");
+         Serial.print("[STATUS] ");
          Serial.println(res_string.c_str());
 
  }
@@ -137,16 +137,19 @@ int GloveDriver::get_pin(int pin_idx){
 
 void GloveDriver::spin(){
  String x;
+ int command = -1;
  x = Serial.readString();
-  Serial.println(String("Toggling ") + String(pin_names[x.toInt() / get_nlevels()]) + String("..."));
-// if(x.indexOf("[SYNCH]") < 0){
-//  delay(100);
-  this->cb(x.toInt());
-//  }
-//  else
-//  {
-//    this->synch();
-//   }
+ int pattern_start = x.startsWith("[MSG]");
+ if(x.startsWith("[MSG]")){
+  command = x.substring(6).toInt();
+  
+//  Serial.println(String("[INFO] Toggling ") + String(pin_names[x.toInt() / get_nlevels()]) + String("..."));
+  this->cb(command);
+  }
+  else
+  {
+    Serial.println(String("[ERROR] Invalid command "));
+   }
 };
 
 

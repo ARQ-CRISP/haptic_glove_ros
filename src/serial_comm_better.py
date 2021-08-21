@@ -33,7 +33,7 @@ class ArduinoComm(serial.threaded.LineReader):
     def handle_line(self, line):
         # print('line received: {}\n'.format(line))
         actuators = set(deepcopy(self.VIB_ORDER))
-        if line.startswith('[INFO] '):
+        if line.startswith('[STATUS] '):
             try:
                 states = line.split('{')[1].split('}')[0].split(',')[:-1]
                 for state in states:
@@ -43,9 +43,11 @@ class ArduinoComm(serial.threaded.LineReader):
                     self.state[finger] = int(lev)
                 for finger in actuators:
                     self.state[finger] = 0
-            except:
-                traceback.print_exc(exc)
+            except Exception as e:
+                traceback.print_exc(e)
                 pass
+        elif line.startswith('[ERROR] '):
+            print(line)
             # print(self.state)
             # print('current state: {}\n'.format(' '.join(state)))
     
@@ -77,7 +79,7 @@ class GloveConnection():
         assert self.connection.isOpen(), 'The connection has been closed'
         self.vib_state[vib_id] = level 
         msg = self.pinlvl2idx(vib_id, level)
-        self.protocol.write_line(str(msg))
+        self.protocol.write_line('[MSG] ' + str(msg))
         return msg
     
     def pinlvl2idx(self, id, level):    
