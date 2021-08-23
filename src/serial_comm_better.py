@@ -79,7 +79,12 @@ class GloveConnection():
         assert self.connection.isOpen(), 'The connection has been closed'
         self.vib_state[vib_id] = level 
         msg = self.pinlvl2idx(vib_id, level)
-        self.protocol.write_line('[MSG] ' + str(msg))
+        try:
+            self.protocol.write_line('[MSG] ' + str(msg))
+        except serial.SerialTimeoutException as exc:
+            print(exc)
+            pass
+            # raise exc
         return msg
     
     def pinlvl2idx(self, id, level):    
